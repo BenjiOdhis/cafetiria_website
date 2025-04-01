@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - School Cafeteria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <h1>School Cafeteria</h1>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="order.html">Order</a></li>
+        </ul>
+    </nav>
+
+    <header>
+        <h2>Our Menu</h2>
+        <input type="text" id="search" placeholder="Search meals...">
+        <button id="dark-mode-toggle">🌙</button>
+        <p id="timer"></p>
+    </header>
+
+    <div id="menu"></div>
+
+    <footer>
+        <p>&copy; 2025 School Cafeteria. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('/api/meals')
+          .then(res => res.json())
+          .then(data => {
+            const menuDiv = document.getElementById('menu');
+            data
+  .filter(meal => meal.available !== false)
+  .forEach(meal => {
+    const mealElement = document.createElement('div');
+
+              mealElement.classList.add('meal');
+              mealElement.innerHTML = `
+                <img src="${meal.image}" alt="${meal.name}">
+                <h3>${meal.name}</h3>
+                <p>Ksh ${meal.price}</p>
+                <div class="rating">${'⭐'.repeat(meal.rating)}</div>
+              `;
+      
+              // ✅ Add the click listener here inside the loop
+              mealElement.addEventListener("click", () => {
+                showMealDetails(meal);
+              });
+      
+              menuDiv.appendChild(mealElement);
+            });
+          })
+          .catch(error => console.error('Failed to load meals:', error));
+      
+        // ✅ Add showMealDetails function below
+        function showMealDetails(meal) {
+          const modal = document.createElement("div");
+          modal.classList.add("modal");
+      
+          modal.innerHTML = `
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <img src="${meal.image}" alt="${meal.name}" style="max-width: 100%; border-radius: 10px;" />
+    <h2>${meal.name}</h2>
+    <p><strong>Price:</strong> Ksh ${meal.price}</p>
+    <p><strong>Rating:</strong> ${'⭐'.repeat(meal.rating || 0)}</p>
+   <p><strong>Availability:</strong> ${(meal.available === false) ? '❌ Unavailable' : '✅ Available'}</p>
+<a href="https://wa.me/254789486213?text=Hello%20Admin,%20I'm%20interested%20in%20${encodeURIComponent(meal.name)}%20(Ksh%20${meal.price}).%20Is%20it%20available?" target="_blank">
+  <button style="margin-top: 10px;">💬 Message Admin on WhatsApp</button>
+</a>
+
+    ${localStorage.getItem("admin") === "true" ? `
+      <button id="mark-unavailable" style="margin-top: 15px;">🚫 Mark as Unavailable</button>
+    ` : ''}
+  </div>
+`;
+
+          document.body.appendChild(modal);
+      
+          modal.querySelector(".close").onclick = () => modal.remove();
+          const unavailableBtn = modal.querySelector("#mark-unavailable");
+if (unavailableBtn) {
+  unavailableBtn.addEventListener("click", async () => {
+    try {
+      const res = await fetch(`/api/meals/${meal._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ available: false }),
+      });
+
+      const result = await res.json();
+      alert(`${result.name} marked as unavailable ✅`);
+
+      modal.remove();
+      location.reload(); // 🔄 Refresh to update the menu
+    } catch (error) {
+      alert("❌ Failed to update meal.");
+      console.error(error);
+    }
+  });
+}
+
+          modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        }
+      </script>
+        
+      
+
+      
+</body>
+</html>
