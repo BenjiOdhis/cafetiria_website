@@ -68,7 +68,7 @@ nav ul li a:hover {
 /* 🌟 HERO SECTION */
 header {
     height: 100vh;
-    background: url('Images/caf1.jpg') no-repeat center center/cover;
+    background: url('/Images/caf1.jpg') no-repeat center center/cover;
     display: flex;
     align-items: center;
     justify-content: center;
